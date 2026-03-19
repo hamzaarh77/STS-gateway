@@ -1,0 +1,234 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "xVoice Tools Provider API",
+        "description": "Laravel micro-service providing business tools for xVoice voice agents.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8088/api",
+            "description": "Local"
+        }
+    ],
+    "paths": {
+        "/administration/partner-context/balance/{partner}": {
+            "get": {
+                "tags": [
+                    "Administration - Balance"
+                ],
+                "summary": "Get partner balance",
+                "description": "Retrieves the remaining and total monthly seconds for a given partner.",
+                "operationId": "Admin-BalanceShow",
+                "parameters": [
+                    {
+                        "name": "partner",
+                        "in": "path",
+                        "description": "Partner UUID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Balance retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_sold_sec": {
+                                            "type": "integer",
+                                            "example": 23400
+                                        },
+                                        "monthly_sold_sec": {
+                                            "type": "integer",
+                                            "example": 36000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Partner not found"
+                    }
+                }
+            }
+        },
+        "/partner-context/{partner}": {
+            "get": {
+                "tags": [
+                    "PartnerContext",
+                    "tool: PartnerContext"
+                ],
+                "summary": "Get partner context",
+                "description": "Retrieves the STS agent configuration and available tools for a given partner.",
+                "operationId": "PartnerContext-PartnerContextShow",
+                "parameters": [
+                    {
+                        "name": "partner",
+                        "in": "path",
+                        "description": "Partner UUID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Partner context retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PartnerContext-ShowResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "STS configuration is inactive"
+                    },
+                    "404": {
+                        "description": "Partner not found"
+                    }
+                }
+            }
+        },
+        "/partner-context/{partner}/infos": {
+            "get": {
+                "tags": [
+                    "tool: PartnerContext"
+                ],
+                "summary": "Get partner infos",
+                "description": "Retrieves the structured information (address, hours, etc.) for a given partner.",
+                "operationId": "PartnerContext-PartnerContextInfos",
+                "parameters": [
+                    {
+                        "name": "partner",
+                        "in": "path",
+                        "description": "Partner UUID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Partner infos retrieved successfully"
+                    },
+                    "404": {
+                        "description": "Partner not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "PartnerContext-ShowResponse": {
+                "properties": {
+                    "stsConfig": {
+                        "properties": {
+                            "system_prompt": {
+                                "description": "system prompt",
+                                "type": "string",
+                                "example": "You are a dentist assistant"
+                            },
+                            "greeting": {
+                                "description": "greeting to start the conversation",
+                                "type": "string",
+                                "example": "Bonjour, comment puis-je vous aider ?"
+                            },
+                            "model": {
+                                "description": "The used LLM for the Ai agent",
+                                "type": "string",
+                                "example": "gpt-4o-realtime"
+                            },
+                            "voice": {
+                                "description": "The chosen voice for the STS provider",
+                                "type": "string",
+                                "example": "alloy"
+                            },
+                            "language": {
+                                "description": "The chosen language",
+                                "type": "string",
+                                "example": "fr"
+                            },
+                            "temperature": {
+                                "description": "Chosen Temperature",
+                                "type": "number",
+                                "example": 0.7
+                            },
+                            "max_duration": {
+                                "description": "Chosen max_duration",
+                                "type": "integer",
+                                "example": 300
+                            },
+                            "first_speaker": {
+                                "description": "who will start the call",
+                                "type": "string",
+                                "example": "agent"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "name": {
+                                    "description": "Order-OrderStore",
+                                    "type": "string",
+                                    "example": "Order"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "classifications": {
+                        "description": "Available call classifications for this partner type",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "key": {
+                                    "description": "Classification key",
+                                    "type": "string",
+                                    "example": "completed"
+                                },
+                                "code_color": {
+                                    "description": "Hex color code for display",
+                                    "type": "string",
+                                    "example": "#10B981"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Administration - Balance",
+            "description": "Administration - Balance"
+        },
+        {
+            "name": "PartnerContext",
+            "description": "PartnerContext"
+        },
+        {
+            "name": "tool: PartnerContext",
+            "description": "tool: PartnerContext"
+        }
+    ]
+}

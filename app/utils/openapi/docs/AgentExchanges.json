@@ -1,0 +1,335 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "xVoice Tools Provider API",
+        "description": "Laravel micro-service providing business tools for xVoice voice agents.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8088/api",
+            "description": "Local"
+        }
+    ],
+    "paths": {
+        "/administration/agent-exchanges/{partner}": {
+            "get": {
+                "tags": [
+                    "Administration - AgentExchanges"
+                ],
+                "summary": "List agent exchanges",
+                "description": "Retrieves a paginated list of agent exchanges for a given partner.",
+                "operationId": "Admin-AgentExchangeIndex",
+                "parameters": [
+                    {
+                        "name": "partner",
+                        "in": "path",
+                        "description": "Partner UUID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Agent exchanges retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Admin-AgentExchangeResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Partner not found"
+                    }
+                }
+            }
+        },
+        "/administration/agent-exchanges/{agentExchange}/feedback": {
+            "patch": {
+                "tags": [
+                    "Administration - AgentExchanges"
+                ],
+                "summary": "Update exchange feedback",
+                "description": "Updates the feedback (like/dislike) for a specific agent exchange.",
+                "operationId": "Admin-AgentExchangeFeedback",
+                "parameters": [
+                    {
+                        "name": "agentExchange",
+                        "in": "path",
+                        "description": "AgentExchange UUID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Admin-UpdateFeedbackRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Feedback updated successfully"
+                    },
+                    "404": {
+                        "description": "Agent exchange not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/agent-exchange/{partner}/recap": {
+            "post": {
+                "tags": [
+                    "AgentExchanges",
+                    "tool: AgentExchanges"
+                ],
+                "summary": "Store agent exchange recap",
+                "description": "Records a voice agent exchange recap and decrements the partner's remaining minutes.",
+                "operationId": "AgentExchange-AgentExchangeStore",
+                "parameters": [
+                    {
+                        "name": "partner",
+                        "in": "path",
+                        "description": "Partner UUID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AgentExchanges-StoreAgentExchangeRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Exchange recorded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AgentExchanges-AgentExchangeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Partner not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Admin-UpdateFeedbackRequest": {
+                "required": [
+                    "is_positive_feedback"
+                ],
+                "properties": {
+                    "is_positive_feedback": {
+                        "description": "Whether the partner considers this call successful",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "AgentExchanges-StoreAgentExchangeRequest": {
+                "required": [
+                    "customer_phone",
+                    "sts_provider",
+                    "recap",
+                    "started_at",
+                    "ended_at"
+                ],
+                "properties": {
+                    "customer_phone": {
+                        "description": "Phone number of the customer who called",
+                        "type": "string",
+                        "maxLength": 20,
+                        "example": "+33612345678"
+                    },
+                    "sts_provider": {
+                        "description": "Speech-to-speech provider used for this call",
+                        "type": "string",
+                        "example": "openai-realtime"
+                    },
+                    "recap": {
+                        "description": "Summary of the conversation generated by the voice agent",
+                        "type": "string",
+                        "example": "Le client a commandé un kebab et demandé les horaires."
+                    },
+                    "started_at": {
+                        "description": "Timestamp when the call started",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-15T14:00:00+00:00"
+                    },
+                    "ended_at": {
+                        "description": "Timestamp when the call ended",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-15T14:02:30+00:00"
+                    },
+                    "classification": {
+                        "description": "Call classification key matching one of the partner type classifications",
+                        "type": "string",
+                        "example": "completed",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Admin-AgentExchangeResponse": {
+                "properties": {
+                    "id": {
+                        "description": "Unique identifier of the exchange",
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "customer_phone": {
+                        "description": "Phone number of the customer who called",
+                        "type": "string",
+                        "example": "+33612345678"
+                    },
+                    "started_at": {
+                        "description": "Timestamp when the call started",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-15T14:00:00+00:00"
+                    },
+                    "duration_s": {
+                        "description": "Duration of the call in seconds",
+                        "type": "integer",
+                        "example": 120
+                    },
+                    "recap": {
+                        "description": "Summary of the conversation generated by the voice agent",
+                        "type": "string",
+                        "example": "Le patient a demandé un rendez-vous."
+                    },
+                    "classification": {
+                        "description": "Call classification key",
+                        "type": "string",
+                        "example": "completed",
+                        "nullable": true
+                    },
+                    "is_positive_feedback": {
+                        "description": "Partner feedback on the call quality",
+                        "type": "boolean",
+                        "example": null,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AgentExchanges-AgentExchangeResponse": {
+                "properties": {
+                    "id": {
+                        "description": "Unique identifier of the exchange",
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "customer_phone": {
+                        "description": "Phone number of the customer who called",
+                        "type": "string",
+                        "example": "+33612345678"
+                    },
+                    "sts_provider": {
+                        "description": "Speech-to-speech provider used for this call",
+                        "type": "string",
+                        "example": "openai-realtime"
+                    },
+                    "recap": {
+                        "description": "Summary of the conversation generated by the voice agent",
+                        "type": "string",
+                        "example": "Le client a commandé un kebab et demandé les horaires."
+                    },
+                    "started_at": {
+                        "description": "Timestamp when the call started",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-15T14:00:00+00:00"
+                    },
+                    "ended_at": {
+                        "description": "Timestamp when the call ended",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-15T14:02:30+00:00"
+                    },
+                    "classification": {
+                        "description": "Call classification key",
+                        "type": "string",
+                        "example": "completed",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Administration - AgentExchanges",
+            "description": "Administration - AgentExchanges"
+        },
+        {
+            "name": "AgentExchanges",
+            "description": "AgentExchanges"
+        },
+        {
+            "name": "tool: AgentExchanges",
+            "description": "tool: AgentExchanges"
+        }
+    ]
+}
