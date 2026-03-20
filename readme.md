@@ -166,12 +166,3 @@ GET /api/partner-context/{partner_id}
 `ToolCallerService` utilise le `http_endpoint` et `http_method` de l'entité `Tool` pour appeler Laravel.
 
 **Clé de liaison :** L'`operationId` OpenAPI (ex: `Order-OrderStore`) sert de nom de tool. Il est identique dans la spec Laravel et dans le `ToolIdentifierDTO` retourné par le partner-context.
-
-## Principes de base
-
-- **Simplicité** — Le code le plus simple qui résout le problème. Pas d'abstraction prématurée, pas de code spéculatif.
-- **Lisibilité** — Le nommage doit rendre le code auto-explicatif. Chaque variable, méthode et classe porte un nom qui reflète exactement son rôle. Si on doit chercher à comprendre, c'est qu'il faut renommer.
-- **Maintenabilité** — Un fichier = une responsabilité. Les dépendances sont claires et injectées. Ajouter un nouveau provider STS ou transport audio ne doit impacter que le nouveau dossier.
-- **Pas d'over-engineering** — Pas de pattern pour le plaisir du pattern. Si une abstraction n'a qu'une seule implémentation et qu'il n'y a pas de besoin concret d'en ajouter, elle n'est pas nécessaire.
-- **Pas de validation business** — FastAPI est un orchestrateur, pas un gardien métier. La validation est le rôle de Laravel.
-- **Exceptions dédiées** — Classes spécifiques par cas d'erreur, pas de `raise Exception("message")` générique.
